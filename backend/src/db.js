@@ -1,16 +1,17 @@
+require('dotenv').config();
 const { Pool } = require('pg');
 const fs = require('fs');
 
 const decodedPassword = Buffer.from(process.env.DB_PASSWORD_BASE64, 'base64').toString('utf-8');
 
 const pool = new Pool({
-  host: "audio-hosting-db.postgres.database.azure.com",
-  user: "audiouser",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
   password: decodedPassword,
-  database: "postgres",
-  port: 5432,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
   ssl: {
-    ca: fs.readFileSync(__dirname + '/../certs/ca-certificate.pem').toString(),
+    ca: fs.readFileSync(process.env.DB_SSL_CA_PATH).toString(),
     rejectUnauthorized: false,
   },
 });
