@@ -2,6 +2,10 @@ require('dotenv').config();
 const { Pool } = require('pg');
 const fs = require('fs');
 
+if (!process.env.DB_PASSWORD_BASE64) {
+  throw new Error("DB_PASSWORD_BASE64 is not set in your environment variables.");
+}
+
 const decodedPassword = Buffer.from(process.env.DB_PASSWORD_BASE64, 'base64').toString('utf-8');
 
 const pool = new Pool({

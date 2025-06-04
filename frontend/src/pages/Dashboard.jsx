@@ -106,9 +106,13 @@ export default function Dashboard() {
     setShowUserForm(false);
   }
 
+  function handleLogout() {
+    localStorage.removeItem("authToken");
+    window.location.href = "/login";
+  }
+
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
       <div className="w-48 bg-purple-800 flex flex-col py-8 px-2">
         <h2 className="text-white text-xl font-bold mb-8 text-center">Menu</h2>
         {TABS.map(tab => (
@@ -124,8 +128,13 @@ export default function Dashboard() {
             {tab.label}
           </button>
         ))}
+        <button
+          className="mt-auto mb-4 px-4 py-2 rounded text-white text-left transition font-semibold hover:bg-purple-700"
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
       </div>
-      {/* Main Content */}
       <div className="flex-1 p-8">
         <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
         {selectedTab === "users" && (
