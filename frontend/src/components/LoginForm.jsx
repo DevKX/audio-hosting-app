@@ -13,7 +13,7 @@ export default function LoginForm({ onLogin }) {
       const response = await axios.post("/api/auth/login", { username, password });
       const { token } = response.data;
       localStorage.setItem("authToken", token);
-      if (onLogin) onLogin({ username });
+      if (onLogin) onLogin({ token });
     } catch (err) {
       setError(err.response.data.error);
     }

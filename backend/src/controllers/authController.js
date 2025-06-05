@@ -8,7 +8,7 @@ exports.login = async (req, res) => {
   try {
     // Query the user from the database
     const result = await pool.query(
-      'SELECT id, username, password_hash, is_active FROM users WHERE username = $1',
+      'SELECT id, username, password_hash, is_active, role FROM users WHERE username = $1',
       [username]
     );
     const user = result.rows[0];
@@ -28,7 +28,7 @@ exports.login = async (req, res) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { id: user.id, username: user.username },
+      { id: user.id, username: user.username, role: user.role }, 
       process.env.JWT_SECRET || 'defaultsecret',
       { expiresIn: '1h' }
     );

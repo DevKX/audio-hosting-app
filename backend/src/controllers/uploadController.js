@@ -1,0 +1,55 @@
+const { BlobServiceClient } = require('@azure/storage-blob');
+const { generateAudioFileName } = require('../services/fileNameService');
+const mm = require('music-metadata'); // Add this line
+
+exports.uploadAudio = async (req, res) => {
+  try {
+    const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
+    const containerName = process.env.AZURE_BLOB_CONTAINER;
+
+    if (!AZURE_STORAGE_CONNECTION_STRING || !containerName) {
+      return res.status(500).json({ error: "Azure storage config missing" });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    // Generate a new file name
+    const username = req.user?.username || "unknown";
+    const generatedFileName = generateAudioFileName(req.file.originalname, username);
+
+    // Get audio duration using music-metadata
+    let duration_seconds = null;
+    try {
+      const metadata = await mm.parseBuffer(req.file.buffer, req.file.mimetype);
+      duration_seconds = metadata.format.duration ? Math.round(metadata.format.duration) : null;
+    } catch (err) {
+      console.warn("Could not extract duration:", err.message);
+    }
+
+    const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+
+    const blockBlobClient = containerClient.getBlockBlobClient(generatedFileName);
+    await blockBlobClient.uploadData(req.file.buffer);
+
+    // Get additional metadata from req.body if sent from frontend
+    const { title, description, is_public, category } = req.body;
+
+    res.json({
+      fileUrl: blockBlobClient.url,           // Azure Blob Storage URL
+      filename: generatedFileName,            // Generated file name
+      title,                                 // From frontend
+      description,                           // From frontend
+      file_size: req.file.size,              // In bytes
+      mime_type: req.file.mimetype,          // MIME type
+      duration_seconds,                      // Extracted from file
+      is_public: is_public === 'true' || is_public === true, // Boolean
+      category                               // From frontend
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to upload file" });
+  }
+};

@@ -75,3 +75,38 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete user' });
   } 
 };
+
+exports.getUserByUsername = async (req, res) => {
+  const { username } = req.params;
+  try {
+    const result = await pool.query(
+      "SELECT id, username, email, is_active FROM users WHERE username = $1",
+      [username]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    console.log("Fetched user:", result.rows[0]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+};
+
+exports.currentLogonUser = async (req, res) => {
+  const userId = req.user.id; // Get user ID from JWT token
+  try {
+    const result = await pool.query(
+      "SELECT id, username, email, is_active, role FROM users WHERE id = $1",
+      [userId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch current user' });
+  }
+};
