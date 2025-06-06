@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useRef } from "react";
 
 export default function AudioUpload({ onUpload }) {
   const [file, setFile] = useState(null);
@@ -6,6 +6,7 @@ export default function AudioUpload({ onUpload }) {
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [category, setCategory] = useState("");
+  const fileInputRef = useRef(null);
 
   function handleFileChange(e) {
     setFile(e.target.files[0]);
@@ -22,6 +23,9 @@ export default function AudioUpload({ onUpload }) {
       setDescription("");
       setIsPublic(false);
       setCategory("");
+       if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   }
 
@@ -37,6 +41,7 @@ export default function AudioUpload({ onUpload }) {
         type="file"
         accept="audio/*"
         onChange={handleFileChange}
+        ref={fileInputRef}
         className="block w-full text-sm text-gray-500
                    file:mr-4 file:py-2 file:px-4
                    file:rounded-md file:border-0
