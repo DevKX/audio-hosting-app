@@ -19,7 +19,6 @@ export default function Dashboard() {
   const [editingUser, setEditingUser] = useState(null);
   const [formMode, setFormMode] = useState("");
   const [currentLogonUser, setCurrentLogonUser] = useState(null);
-  const username = localStorage.getItem("username");
   const token = localStorage.getItem("authToken");
 
   useEffect(() => {

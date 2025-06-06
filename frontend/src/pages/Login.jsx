@@ -10,6 +10,13 @@ export default function Login({ onLogin }) {
           audio-hosting-app
         </h1>
         <LoginForm onLogin={onLogin} />
+        <div className="mt-6 text-center text-sm text-red-600 font-semibold bg-red-50 border border-red-200 rounded p-3">
+          This is an assessment project for demonstration purposes only and is not
+          an official product.
+        </div>
+        <div className="mt-2 text-center text-xs text-gray-500">
+          Developed by KX for assessment purposes.
+        </div>
       </div>
     </div>
   );
