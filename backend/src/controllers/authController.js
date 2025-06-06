@@ -14,16 +14,16 @@ exports.login = async (req, res) => {
     const user = result.rows[0];
 
     if (!user) {
-      return res.status(401).json({ error: "User not found" });
+      return res.status(401).json({ message: "User not found" });
     }
 
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) {
-      return res.status(401).json({ error: "Invalid password" });
+      return res.status(401).json({ message: "Invalid password" });
     }
 
     if (!user.is_active) {
-      return res.status(403).json({ error: "User is not active" });
+      return res.status(403).json({ message: "User is not active" });
     }
 
     // Generate JWT
@@ -33,9 +33,12 @@ exports.login = async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    res.json({ token });
+    res.status(200).json({ 
+      message: "Login successful",
+      token : {token}
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).end();
+    return res.status(403).json({ message: "Login failed" });
   }
 };

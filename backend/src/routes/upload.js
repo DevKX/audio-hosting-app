@@ -12,4 +12,6 @@ router.use(authenticateToken); // Apply authentication middleware to all routes 
 
 router.post('/', upload.single('file'), uploadController.uploadAudio);
 
+router.delete('/:filename', uploadController.deleteAudio);
+
 module.exports = router;

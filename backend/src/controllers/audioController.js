@@ -36,10 +36,13 @@ exports.createAudio = async (req, res) => {
         category
       ]
     );
-    res.status(201).json(result.rows[0]);
+    res.status(201).json({
+      message: "Audio metadata inserted successfully",
+      audio: result.rows[0]
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to insert audio metadata" });
+    return res.status(500).json({ message: "Failed to insert audio metadata" });
   }
 };
 
@@ -51,12 +54,12 @@ exports.deleteAudio = async (req, res) => {
       [id]
     );
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Audio file not found" });
+      return res.status(404).json({ message: "Audio file not found" });
     }
-    res.json({ message: "Audio file deleted", audio: result.rows[0] });
+    res.status(200).json({ message: "Audio file deleted", audio: result.rows[0] });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to delete audio file" });
+    return res.status(500).json({ message: "Failed to delete audio file" });
   }
 };
 
@@ -64,7 +67,7 @@ exports.listAudio = async (req, res) => {
   try {
     const user_id = req.user.id;
     const user_role = req.user.role; // Make sure your JWT includes the user's role
-    console.log(`User ID: ${user_id}, Role: ${user_role}`);
+
 
     let query = `
       SELECT audio_files.*, users.username AS uploaded_by
@@ -112,10 +115,10 @@ exports.listAudio = async (req, res) => {
       return { ...audio, sasUrl };
     });
 
-    res.json(audioFilesWithSas);
+    res.status(200).json(audioFilesWithSas);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch audio files" });
+    return res.status(500).json({ message: "Failed to fetch audio files" });
   }
   };
 
@@ -140,8 +143,9 @@ exports.getSasUrl = async (req, res) => {
     }, sharedKeyCredential).toString();
 
     const url = `https://${accountName}.blob.core.windows.net/${containerName}/${filename}?${sasToken}`;
-    res.json({ url });
+    res.status(200).json({ message: "SAS URL generated", url });
   } catch (err) {
-    res.status(500).json({ error: "Failed to generate SAS URL" });
+    console.error(err);
+    return res.status(500).json({ message: "Failed to generate SAS URL" });
   }
 };

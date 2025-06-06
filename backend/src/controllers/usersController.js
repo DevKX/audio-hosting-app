@@ -4,16 +4,19 @@ const bcrypt = require('bcrypt');
 exports.listUsers = async (req, res) => {
   try {
     const result = await pool.query("SELECT id, username, email, is_active FROM users WHERE role != 'admin'");
-    res.json(result.rows);
+    res.status(200).json({
+      message: "Users fetched successfully",
+      users: result.rows
+    });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch users' });
+    return res.status(500).json({ message: 'Failed to fetch users' });
   }
 };
 
 exports.createUser = async (req, res) => {
   const { username, password, email, is_active } = req.body;
   if (!username || !password || !email) {
-    return res.status(400).json({ error: 'Username, password, and email are required' });
+    return res.status(400).json({ message: 'Username, password, and email are required' });
   }
 
   try {
@@ -22,10 +25,13 @@ exports.createUser = async (req, res) => {
       "INSERT INTO users (username, password_hash, email, is_active) VALUES ($1, $2, $3, $4) RETURNING id, username, email, is_active",
       [username, hashedPassword, email, is_active]
     );
-    res.status(201).json(result.rows[0]);
+    res.status(201).json({
+      message: "User created successfully",
+      user: result.rows[0]
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to create user' });
+    return res.status(500).json({ message: 'Failed to create user' });
   }
 };
 
@@ -33,7 +39,7 @@ exports.updateUser = async (req, res) => {
   const { username, password, email, is_active } = req.body;
   const userId = req.params.id;
   if (!username || !email) {
-    return res.status(400).json({ error: 'Username and email are required' });
+    return res.status(400).json({ message: 'Username and email are required' });
   }
 
   try {
@@ -51,12 +57,15 @@ exports.updateUser = async (req, res) => {
       );
     }
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
-    res.json(result.rows[0]);
+    res.status(200).json({
+      message: "User updated successfully",
+      user: result.rows[0]
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to update user' });
+    return res.status(500).json({ message: 'Failed to update user' });
   }
 };
 
@@ -68,11 +77,14 @@ exports.deleteUser = async (req, res) => {
       [userId]  
     )
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
-    res.json({ id: result.rows[0].id });
+    res.status(200).json({
+      message: "User deleted successfully",
+      id: result.rows[0].id
+    });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to delete user' });
+    return res.status(500).json({ message: 'Failed to delete user' });
   } 
 };
 
@@ -84,13 +96,15 @@ exports.getUserByUsername = async (req, res) => {
       [username]
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
-    console.log("Fetched user:", result.rows[0]);
-    res.json(result.rows[0]);
+    res.status(200).json({
+      message: "User fetched successfully",
+      user: result.rows[0]
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to fetch user' });
+    return res.status(500).json({ message: 'Failed to fetch user' });
   }
 };
 
@@ -102,11 +116,14 @@ exports.currentLogonUser = async (req, res) => {
       [userId]
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
-    res.json(result.rows[0]);
+    res.status(200).json({
+      message: "Current user fetched successfully",
+      user: result.rows[0]
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to fetch current user' });
+    return res.status(500).json({ message: 'Failed to fetch logon user' });
   }
 };

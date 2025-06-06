@@ -48,8 +48,36 @@ exports.uploadAudio = async (req, res) => {
       is_public: is_public === 'true' || is_public === true, // Boolean
       category                               // From frontend
     });
+    return res.status(201).json({
+      message: "File uploaded successfully"});
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to upload file" });
+    return res.status(500).json({ message: "Failed to upload file" });
+  }
+};
+
+exports.deleteAudio = async (req, res) => {
+  try {
+    const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
+    const containerName = process.env.AZURE_BLOB_CONTAINER;
+    const { filename } = req.params; // or req.body, depending on your route
+
+    if (!AZURE_STORAGE_CONNECTION_STRING || !containerName) {
+      return res.status(500).json({ error: "Azure storage config missing" });
+    }
+    if (!filename) {
+      return res.status(400).json({ error: "No filename provided" });
+    }
+
+    const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    const blockBlobClient = containerClient.getBlockBlobClient(filename);
+
+    await blockBlobClient.deleteIfExists();
+
+    res.status(200).json({ message: "File deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to delete file" });
   }
 };
