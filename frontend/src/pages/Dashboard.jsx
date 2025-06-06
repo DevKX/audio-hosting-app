@@ -98,7 +98,7 @@ export default function Dashboard({ showConsoleMessage }) {
     formData.append("is_public", isPublic);
     formData.append("category", category);
 
-    console.log(isPublic);
+
     axios
       .post("/api/upload", formData, {
         headers: {
@@ -115,7 +115,6 @@ export default function Dashboard({ showConsoleMessage }) {
   }
 
   function handleUploadAudioMetadata(fileData) {
-    console.log("File Data:", fileData);
     axios
       .post(
         "/api/audio",
