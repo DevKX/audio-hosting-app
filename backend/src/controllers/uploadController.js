@@ -37,19 +37,18 @@ exports.uploadAudio = async (req, res) => {
     // Get additional metadata from req.body if sent from frontend
     const { title, description, is_public, category } = req.body;
 
-    res.json({
-      fileUrl: blockBlobClient.url,           // Azure Blob Storage URL
-      filename: generatedFileName,            // Generated file name
-      title,                                 // From frontend
-      description,                           // From frontend
-      file_size: req.file.size,              // In bytes
-      mime_type: req.file.mimetype,          // MIME type
-      duration_seconds,                      // Extracted from file
-      is_public: is_public === 'true' || is_public === true, // Boolean
-      category                               // From frontend
+    res.status(201).json({
+      message: "File uploaded successfully",
+      fileUrl: blockBlobClient.url,
+      filename: generatedFileName,
+      title,
+      description,
+      file_size: req.file.size,
+      mime_type: req.file.mimetype,
+      duration_seconds,
+      is_public: is_public === 'true' || is_public === true,
+      category
     });
-    return res.status(201).json({
-      message: "File uploaded successfully"});
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Failed to upload file" });

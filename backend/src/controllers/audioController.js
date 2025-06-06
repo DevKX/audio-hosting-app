@@ -18,6 +18,7 @@ exports.createAudio = async (req, res) => {
   } = req.body;
 
   try {
+
     const result = await pool.query(
       `INSERT INTO audio_files (
         user_id, title, description, filename, file_path, mime_type, file_size, duration_seconds, is_public, category
@@ -68,7 +69,6 @@ exports.listAudio = async (req, res) => {
     const user_id = req.user.id;
     const user_role = req.user.role; // Make sure your JWT includes the user's role
 
-
     let query = `
       SELECT audio_files.*, users.username AS uploaded_by
       FROM audio_files
@@ -99,6 +99,8 @@ exports.listAudio = async (req, res) => {
     const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
 
     const audioFilesWithSas = result.rows.map(audio => {
+
+
       if (!audio.is_public) {
         return { ...audio, sasUrl: null };
       }
@@ -112,40 +114,16 @@ exports.listAudio = async (req, res) => {
       }, sharedKeyCredential).toString();
 
       const sasUrl = `https://${accountName}.blob.core.windows.net/${containerName}/${audio.filename}?${sasToken}`;
+
       return { ...audio, sasUrl };
     });
-
-    res.status(200).json(audioFilesWithSas);
+    res.status(200).json({
+    message: "Audio files fetched successfully",
+    audioFiles: audioFilesWithSas
+});
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Failed to fetch audio files" });
   }
   };
 
-
-  // Generate a SAS URL for downloading an audio file
-exports.getSasUrl = async (req, res) => {
-  try {
-    const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
-    const accountKey = process.env.AZURE_STORAGE_ACCOUNT_KEY;
-    const containerName = process.env.AZURE_BLOB_CONTAINER;
-    const { filename } = req.params;
-
-    const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
-
-    const sasToken = generateBlobSASQueryParameters({
-      containerName,
-      blobName: filename,
-      permissions: BlobSASPermissions.parse("r"),
-      startsOn: new Date(),
-      expiresOn: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
-      protocol: SASProtocol.Https,
-    }, sharedKeyCredential).toString();
-
-    const url = `https://${accountName}.blob.core.windows.net/${containerName}/${filename}?${sasToken}`;
-    res.status(200).json({ message: "SAS URL generated", url });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Failed to generate SAS URL" });
-  }
-};

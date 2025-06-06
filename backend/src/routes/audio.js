@@ -11,6 +11,5 @@ router.post('/', audioController.createAudio);
 
 router.delete('/:id', audioController.deleteAudio);
 
-router.get('/sas/:filename', audioController.getSasUrl);
 
 module.exports = router;
