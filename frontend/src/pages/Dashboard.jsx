@@ -21,20 +21,32 @@ export default function Dashboard({ showConsoleMessage }) {
   const [currentLogonUser, setCurrentLogonUser] = useState(null);
   const token = localStorage.getItem("authToken");
 
-  useEffect(() => {
+  function fetchUsers() {
     axios
       .get("/api/users", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setUsers(res.data.users))
       .catch((err) => {
-        showConsoleMessage(err.response.data.message, "error");
-
+        showConsoleMessage(
+          err.response?.data?.message || err.message || "Failed to fetch users.",
+          "error"
+        );
         setUsers([]);
       });
-  }, [token]);
+  }
+
 
   useEffect(() => {
+    fetchUsers(); 
+
+    const interval = setInterval(() => {
+      fetchUsers();
+    }, 10000); // every 10 seconds
+    return () => clearInterval(interval); // cleanup on unmount
+  }, [token]);
+
+  function fetchAudioFiles() {
     axios
       .get("/api/audio", {
         headers: { Authorization: `Bearer ${token}` },
@@ -43,9 +55,23 @@ export default function Dashboard({ showConsoleMessage }) {
         setAudioFiles(res.data.audioFiles);
       })
       .catch((err) => {
-        showConsoleMessage(err.response.data.message, "error");
+        showConsoleMessage(
+          err.response.data.message,
+          "error"
+        );
         setAudioFiles([]);
       });
+  }
+
+
+
+
+  useEffect(() => {  
+    fetchAudioFiles();
+    const interval = setInterval(() => {
+      fetchAudioFiles();
+    }, 10000); 
+    return () => clearInterval(interval); // cleanup on unmount
   }, [token]);
 
   useEffect(() => {
@@ -72,6 +98,7 @@ export default function Dashboard({ showConsoleMessage }) {
     formData.append("is_public", isPublic);
     formData.append("category", category);
 
+    console.log(isPublic);
     axios
       .post("/api/upload", formData, {
         headers: {
@@ -88,48 +115,48 @@ export default function Dashboard({ showConsoleMessage }) {
   }
 
   function handleUploadAudioMetadata(fileData) {
+    console.log("File Data:", fileData);
     axios
-          .post(
-            "/api/audio",
-            {
-              file_path: fileData.fileUrl,
-              filename: fileData.filename,
-              title: fileData.title,
-              description: fileData.description,
-              file_size: fileData.file_size,
-              duration_seconds: fileData.duration_seconds,
-              is_public: fileData.isPublic,
-              category: fileData.category,
-              mime_type: fileData.mime_type,
-            },
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          )
-          .then((res) => {
-            
-            setAudioFiles((prev) => [...prev, res.data]);
-            showConsoleMessage(res.data.message, "success");
+      .post(
+        "/api/audio",
+        {
+          file_path: fileData.fileUrl,
+          filename: fileData.filename,
+          title: fileData.title,
+          description: fileData.description,
+          file_size: fileData.file_size,
+          duration_seconds: fileData.duration_seconds,
+          is_public: fileData.is_public,
+          category: fileData.category,
+          mime_type: fileData.mime_type,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+      .then((res) => {
+        showConsoleMessage("Audio Uploaded Successfully", "success");
+        fetchAudioFiles(); 
+      })
+      .catch((err) => {
+        // If metadata upload fails, delete the uploaded file
+        axios
+          .delete(`/api/upload/${fileData.filename}`, {
+            headers: { Authorization: `Bearer ${token}` },
           })
-          .catch((err) => {
-            // If metadata upload fails, delete the uploaded file
-            axios
-              .delete(`/api/upload/${fileData.filename}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              })
-              .then(() => {
-                showConsoleMessage(
-                  "Audio Upload failed. Uploaded file removed.",
-                  "error"
-                );
-              })
-              .catch(() => {
-                showConsoleMessage(
-                  "Audio upload failed. Please contact support to delete the audio file.",
-                  "error"
-                );
-              });
+          .then(() => {
+            showConsoleMessage(
+              "Audio Upload failed. Uploaded file removed.",
+              "error"
+            );
+          })
+          .catch(() => {
+            showConsoleMessage(
+              "Audio upload failed. Please contact support to delete the audio file.",
+              "error"
+            );
           });
+      });
   }
 
   
@@ -168,10 +195,8 @@ export default function Dashboard({ showConsoleMessage }) {
           }
         )
         .then((res) => {
-          setUsers((prev) => {
-            showConsoleMessage(res.data.message, "success");
-            return [...prev, res.data.user];
-          });
+          fetchUsers();
+          showConsoleMessage(res.data.message, "success");
         })
         .catch((err) => {
           showConsoleMessage(err.response.data.message, "error");
@@ -192,9 +217,7 @@ export default function Dashboard({ showConsoleMessage }) {
         )
         .then((res) => {
           showConsoleMessage(res.data.message, "success");
-          setUsers((prev) =>
-            prev.map((user) => (user.id === res.data.user.id ? res.data.user : user))
-          );
+          fetchUsers();
         })
         .catch((err) => {
           showConsoleMessage(err.response.error, "error");
@@ -207,7 +230,7 @@ export default function Dashboard({ showConsoleMessage }) {
         .then((res) => {
           {
             showConsoleMessage(res.data.message, "success");
-            setUsers((prev) => prev.filter((user) => user.id !== userData.id));
+            fetchUsers();
           }
         })
         .catch((err) => {
