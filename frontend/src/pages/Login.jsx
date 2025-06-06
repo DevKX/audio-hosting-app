@@ -1,5 +1,5 @@
 import LoginForm from "../components/LoginForm";
-import HTXLogo from "../assets/HTX_logo.png";
+import HTXLogo from "../assets/atom.png";
 
 export default function Login({ onLogin }) {
   return (

@@ -94,12 +94,18 @@ export default function AudioUpload({ onUpload }) {
       <label className="block mb-2 text-sm font-medium text-gray-700">
         Category
       </label>
-      <input
-        type="text"
+      <select
         value={category}
         onChange={e => setCategory(e.target.value)}
         className="block w-full mb-2 border rounded px-2 py-1"
-      />
+        required
+      >
+        <option value="">Select a category</option>
+        <option value="Interview">Interview</option>
+        <option value="Evidence">Evidence</option>
+        <option value="Surveillance">Surveillance</option>
+        <option value="Communication">Communication</option>
+      </select>
 
       <label className="inline-flex items-center mt-2">
         <input
