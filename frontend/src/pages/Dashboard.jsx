@@ -11,7 +11,7 @@ const TABS = [
   { key: "upload", label: "Upload Audio" },
 ];
 
-export default function Dashboard() {
+export default function Dashboard({ showConsoleMessage }) {
   const [selectedTab, setSelectedTab] = useState("audio");
   const [users, setUsers] = useState([]);
   const [audioFiles, setAudioFiles] = useState([]);
@@ -22,69 +22,117 @@ export default function Dashboard() {
   const token = localStorage.getItem("authToken");
 
   useEffect(() => {
-    axios.get("/api/users", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setUsers(res.data))
-      .catch(err => {
-        console.error("Failed to fetch users:", err);
+    axios
+      .get("/api/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setUsers(res.data.users))
+      .catch((err) => {
+        showConsoleMessage(err.response.data.message, "error");
+
         setUsers([]);
       });
   }, [token]);
 
   useEffect(() => {
-    axios.get("/api/audio", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
-        console.log("Fetched audio files:", res.data);
-        setAudioFiles(res.data);
+    axios
+      .get("/api/audio", {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .catch(err => {
-        console.error("Failed to fetch audio files:", err);
+      .then((res) => {
+        setAudioFiles(res.data.audioFiles);
+      })
+      .catch((err) => {
+        showConsoleMessage(err.response.data.message, "error");
         setAudioFiles([]);
       });
   }, [token]);
 
   useEffect(() => {
-    axios.get("/api/users/currentLogonUser", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
-        console.log("Fetched currentLogonUser:", res.data); // <-- Add this line
-        setCurrentLogonUser(res.data);
+    axios
+      .get("/api/users/currentLogonUser", {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .catch(err => {
-        console.error("Failed to fetch currentLogonUser:", err);
+      .then((res) => {
+        setCurrentLogonUser(res.data.user);
+      })
+      .catch((err) => {
+        showConsoleMessage(err.response.data.message, "error");
         localStorage.removeItem("authToken");
         window.location.href = "/login";
       });
   }, [token]);
 
-  function handleUploadAudio(fileData) {
-    axios.post("/api/audio", {
-      file_path: fileData.fileUrl,
-      filename: fileData.filename,
-      title: fileData.title,
-      description: fileData.description,
-      file_size: fileData.file_size,
-      duration_seconds: fileData.duration_seconds,
-      is_public: fileData.is_public,
-      category: fileData.category,
-      mime_type: fileData.mime_type,
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(() => {
-      axios.get("/api/audio", {
-        headers: { Authorization: `Bearer ${token}` }
+
+  function handleAudioUpload({ file, title, description, isPublic, category }) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("is_public", isPublic);
+    formData.append("category", category);
+
+    axios
+      .post("/api/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
       })
-        .then(res => setAudioFiles(res.data))
-        .catch(err => {
-          console.error("Failed to fetch audio files:", err);
-        });
-    });
+      .then((res) => {
+       handleUploadAudioMetadata(res.data);
+      })
+      .catch((err) => {
+        showConsoleMessage(err.response.data.message, "error");
+      });
   }
+
+  function handleUploadAudioMetadata(fileData) {
+    axios
+          .post(
+            "/api/audio",
+            {
+              file_path: fileData.fileUrl,
+              filename: fileData.filename,
+              title: fileData.title,
+              description: fileData.description,
+              file_size: fileData.file_size,
+              duration_seconds: fileData.duration_seconds,
+              is_public: fileData.isPublic,
+              category: fileData.category,
+              mime_type: fileData.mime_type,
+            },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          )
+          .then((res) => {
+            
+            setAudioFiles((prev) => [...prev, res.data]);
+            showConsoleMessage(res.data.message, "success");
+          })
+          .catch((err) => {
+            // If metadata upload fails, delete the uploaded file
+            axios
+              .delete(`/api/upload/${fileData.filename}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              })
+              .then(() => {
+                showConsoleMessage(
+                  "Audio Upload failed. Uploaded file removed.",
+                  "error"
+                );
+              })
+              .catch(() => {
+                showConsoleMessage(
+                  "Audio upload failed. Please contact support to delete the audio file.",
+                  "error"
+                );
+              });
+          });
+  }
+
+  
 
   function handleCreateUser() {
     setEditingUser(null);
@@ -94,56 +142,77 @@ export default function Dashboard() {
 
   function handleUpdateUser(user) {
     setEditingUser(user);
-    setFormMode("update"); 
+    setFormMode("update");
     setShowUserForm(true);
   }
 
   function handleDeleteUser(user) {
     setEditingUser(user);
-    setFormMode("delete"); 
+    setFormMode("delete");
     setShowUserForm(true);
   }
 
   function handleUserFormSubmit(userData) {
     if (formMode === "create") {
-      axios.post("/api/users", {
-        username: userData.username,
-        password: userData.password,
-        email: userData.email,
-        is_active: userData.is_active,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => {
-          setUsers(prev => [...prev, res.data]);
+      axios
+        .post(
+          "/api/users",
+          {
+            username: userData.username,
+            password: userData.password,
+            email: userData.email,
+            is_active: userData.is_active,
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .then((res) => {
+          setUsers((prev) => {
+            showConsoleMessage(res.data.message, "success");
+            return [...prev, res.data.user];
+          });
         })
-        .catch(err => {
-          alert("Failed to create user.");
+        .catch((err) => {
+          showConsoleMessage(err.response.data.message, "error");
         });
     } else if (formMode === "update") {
-      axios.put(`/api/users/${userData.id}`, {
-        username: userData.username,
-        password: userData.password,
-        email: userData.email,
-        is_active: userData.is_active,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => {
-          setUsers(prev => prev.map(user => (user.id === res.data.id ? res.data : user)));
+      axios
+        .put(
+          `/api/users/${userData.id}`,
+          {
+            username: userData.username,
+            password: userData.password,
+            email: userData.email,
+            is_active: userData.is_active,
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .then((res) => {
+          showConsoleMessage(res.data.message, "success");
+          setUsers((prev) =>
+            prev.map((user) => (user.id === res.data.user.id ? res.data.user : user))
+          );
         })
-        .catch(err => {
-          alert("Failed to update user.");
+        .catch((err) => {
+          showConsoleMessage(err.response.error, "error");
         });
     } else if (formMode === "delete") {
-      axios.delete(`/api/users/${userData.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(() => {
-          setUsers(prev => prev.filter(user => user.id !== userData.id));
+      axios
+        .delete(`/api/users/${userData.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
         })
-        .catch(err => {
-          alert("Failed to delete user.");
+        .then((res) => {
+          {
+            showConsoleMessage(res.data.message, "success");
+            setUsers((prev) => prev.filter((user) => user.id !== userData.id));
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          showConsoleMessage(err.response.data.message, "error");
         });
     }
     setShowUserForm(false);
@@ -159,7 +228,7 @@ export default function Dashboard() {
   }
 
   // Only show "Users" tab if currentLogonUser is admin
-  const filteredTabs = TABS.filter(tab => {
+  const filteredTabs = TABS.filter((tab) => {
     if (tab.key === "users" && currentLogonUser?.role !== "admin") {
       return false;
     }
@@ -172,7 +241,7 @@ export default function Dashboard() {
     <div className="flex min-h-screen bg-gray-50">
       <div className="w-48 bg-purple-800 flex flex-col py-8 px-2">
         <h2 className="text-white text-xl font-bold mb-8 text-center">Menu</h2>
-        {filteredTabs.map(tab => (
+        {filteredTabs.map((tab) => (
           <button
             key={tab.key}
             className={`mb-4 px-4 py-2 rounded text-white text-left transition font-semibold ${
@@ -192,14 +261,13 @@ export default function Dashboard() {
           Logout
         </button>
       </div>
-      {/* Main content */}
       <div className="flex-1 p-8 relative">
-
-        <div className="absolute top-8 right-8 text-gray-700 text-lg font-semibold">
-          {currentLogonUser && (
-            <>Welcome, {currentLogonUser.username}!</>
-          )}
+        <div className="absolute top-8 right-8 flex flex-col items-end space-y-2">
+          <div className="text-gray-700 text-lg font-semibold">
+            {currentLogonUser && <>Welcome, {currentLogonUser.username}!</>}
+          </div>
         </div>
+
         <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
         {selectedTab === "users" && (
           <>
@@ -215,7 +283,9 @@ export default function Dashboard() {
                   initialValues={editingUser}
                   onSubmit={handleUserFormSubmit}
                   onCancel={handleUserFormCancel}
-                  submitLabel={formMode.charAt(0).toUpperCase() + formMode.slice(1)}
+                  submitLabel={
+                    formMode.charAt(0).toUpperCase() + formMode.slice(1)
+                  }
                   readOnly={formMode === "delete"}
                 />
               </div>
@@ -223,7 +293,7 @@ export default function Dashboard() {
           </>
         )}
         {selectedTab === "audio" && <AudioList audioFiles={audioFiles} />}
-        {selectedTab === "upload" && <AudioUpload onUpload={handleUploadAudio} />}
+        {selectedTab === "upload" && <AudioUpload onUpload={handleAudioUpload} />}
       </div>
     </div>
   );
