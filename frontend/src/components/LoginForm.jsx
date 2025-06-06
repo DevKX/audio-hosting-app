@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-export default function LoginForm({ onLogin }) {
+export default function LoginForm({ onLogin, showConsoleMessage }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -9,14 +9,17 @@ export default function LoginForm({ onLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    try {
-      const response = await axios.post("/api/auth/login", { username, password });
-      const { token } = response.data;
+      axios
+      .post("/api/auth/login", { username, password }, {
+      })
+      .then((res) => {
+       const { token } = res.data.token;
       localStorage.setItem("authToken", token);
       if (onLogin) onLogin({ token });
-    } catch (err) {
-      setError(err.response.data.error);
-    }
+      })
+      .catch((err) => {
+        showConsoleMessage(err.response.data.message , "error");
+      });
   };
 
   return (
@@ -28,6 +31,7 @@ export default function LoginForm({ onLogin }) {
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         autoComplete="username"
+        required
       />
       <input
         type="password"
@@ -36,6 +40,7 @@ export default function LoginForm({ onLogin }) {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         autoComplete="current-password"
+        required
       />
       <button
         type="submit"
@@ -43,7 +48,6 @@ export default function LoginForm({ onLogin }) {
       >
         Login
       </button>
-      {error && <p className="text-red-500 text-center">{error}</p>}
     </form>
   );
 }

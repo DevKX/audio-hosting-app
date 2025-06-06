@@ -3,11 +3,12 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import MessageConsole from "./components/MessageConsole";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [logonUser, setLogonUser] = useState(null); // Renamed from user
-  const [audioFiles, setAudioFiles] = useState([]);
+  const [consoleMessage, setConsoleMessage] = useState("");
+  const [consoleType, setConsoleType] = useState("info");
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -20,41 +21,38 @@ export default function App() {
         .catch(() => {
           localStorage.removeItem("authToken");
           setIsLoggedIn(false);
-          setLogonUser(null);
         });
     }
   }, []);
 
   const handleLogin = (user) => {
     if (!user?.token) {
-      console.error("No token found in user object:", user);
+      showConsoleMessage("Login failed: No token received", "error");
       return;
     }
 
     // Store token in localStorage
     localStorage.setItem("authToken", user.token);
-
-    // Decode token and store user information
-    const decoded = jwtDecode(user.token);
-    localStorage.setItem("username", decoded.username); // Store username from JWT
-    console.log("Decoded user:", decoded);
-
     setIsLoggedIn(true);
-    setLogonUser(decoded); // Store decoded user info in state
   };
 
-  const handleUpload = (file) => {
-    const url = URL.createObjectURL(file);
-    setAudioFiles((prev) => [...prev, { id: Date.now(), name: file.name, url }]);
-  };
 
-  return isLoggedIn ? (
-    <Dashboard
-      logonUser={logonUser}
-      audioFiles={audioFiles}
-      onUpload={handleUpload}
-    />
-  ) : (
-    <Login onLogin={handleLogin} />
+  function showConsoleMessage(message, type = "info", duration = 3000) {
+    setConsoleMessage(message);
+    setConsoleType(type);
+    if (duration > 0) {
+      setTimeout(() => setConsoleMessage(""), duration);
+    }
+  }
+
+  return (
+    <>
+      {isLoggedIn ? (
+        <Dashboard showConsoleMessage={showConsoleMessage} />
+      ) : (
+        <Login onLogin={handleLogin} showConsoleMessage={showConsoleMessage} />
+      )}
+      <MessageConsole message={consoleMessage} type={consoleType} />
+    </>
   );
 }

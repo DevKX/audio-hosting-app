@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
 
 export default function AudioUpload({ onUpload }) {
   const [file, setFile] = useState(null);
@@ -15,40 +14,15 @@ export default function AudioUpload({ onUpload }) {
   function handleSubmit(e) {
     e.preventDefault();
     if (file && onUpload) {
-      handleUploadFile(file);
-      setFile(null);
-    }
-  }
-
-  function handleUploadFile(file) {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("is_public", isPublic);
-    formData.append("category", category);
-
-    axios.post("/api/upload", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`
-      }
-    })
-    .then(res => {
-      alert("Upload successful!");
-      if (onUpload) {
-        onUpload(res.data); 
-      }
+      // Pass all form data to Dashboard
+      onUpload({ file, title, description, isPublic, category });
       // Clear all form fields
       setFile(null);
       setTitle("");
       setDescription("");
       setIsPublic(false);
       setCategory("");
-    })
-    .catch(err => {
-      alert("Upload failed.");
-    });
+    }
   }
 
   return (
