@@ -8,6 +8,9 @@ if (!process.env.DB_PASSWORD_BASE64) {
 
 const decodedPassword = Buffer.from(process.env.DB_PASSWORD_BASE64, 'base64').toString('utf-8');
 
+//Set up PostgresSQL connection pool using .env variables
+//.env file should be placed in the root of the project
+//.env will not be committed to public repository
 const pool = new Pool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
