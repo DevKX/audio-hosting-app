@@ -4,8 +4,6 @@ const uploadController = require('../controllers/uploadController');
 const router = express.Router();
 const authenticateToken = require('../middleware/authMiddleware');
 
-
-
 const upload = multer(); 
 
 router.use(authenticateToken); // Apply authentication middleware to all routes in this file

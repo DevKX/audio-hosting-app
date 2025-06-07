@@ -9,7 +9,5 @@ router.get('/', audioController.listAudio);
 
 router.post('/', audioController.createAudio);
 
-router.delete('/:id', audioController.deleteAudio);
-
 
 module.exports = router;

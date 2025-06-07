@@ -8,7 +8,7 @@ exports.createAudio = async (req, res) => {
   const {
     title,
     description,
-    filename, // <-- Use the already generated filename from the request
+    filename,
     file_path,
     mime_type,
     file_size,
@@ -47,22 +47,6 @@ exports.createAudio = async (req, res) => {
   }
 };
 
-exports.deleteAudio = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await pool.query(
-      'DELETE FROM audio_files WHERE id = $1 RETURNING *',
-      [id]
-    );
-    if (result.rowCount === 0) {
-      return res.status(404).json({ message: "Audio file not found" });
-    }
-    res.status(200).json({ message: "Audio file deleted", audio: result.rows[0] });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Failed to delete audio file" });
-  }
-};
 
 exports.listAudio = async (req, res) => {
   try {

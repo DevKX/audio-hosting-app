@@ -35,6 +35,7 @@ exports.createUser = async (req, res) => {
   }
 };
 
+
 exports.updateUser = async (req, res) => {
   const { username, password, email, is_active } = req.body;
   const userId = req.params.id;
@@ -44,6 +45,7 @@ exports.updateUser = async (req, res) => {
 
   try {
     let result;
+    // If password is provided, hash it and update the user
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
       result = await pool.query(
@@ -88,25 +90,6 @@ exports.deleteUser = async (req, res) => {
   } 
 };
 
-exports.getUserByUsername = async (req, res) => {
-  const { username } = req.params;
-  try {
-    const result = await pool.query(
-      "SELECT id, username, email, is_active FROM users WHERE username = $1",
-      [username]
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    res.status(200).json({
-      message: "User fetched successfully",
-      user: result.rows[0]
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Failed to fetch user' });
-  }
-};
 
 exports.currentLogonUser = async (req, res) => {
   const userId = req.user.id; // Get user ID from JWT token
@@ -116,7 +99,7 @@ exports.currentLogonUser = async (req, res) => {
       [userId]
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(401).json({ message: 'User not found' });
     }
     res.status(200).json({
       message: "Current user fetched successfully",
