@@ -35,15 +35,12 @@ app.use('/api/upload', uploadRouter);
 const audioRouter = require('./routes/audio');
 app.use('/api/audio', audioRouter);
 
-// Default 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Not Found' });
-});
 
 // Fallback to index.html for Single Page Application (SPA)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
+
 
 // Start server
 const PORT = process.env.PORT || 3000;
