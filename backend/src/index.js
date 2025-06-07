@@ -10,33 +10,39 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+// CORS allow any frontend from diff origin ($web container blob storage) to make request to this backend
+// For assessment purposes, both frontend and backend are hosted on same orgin
+//app.use(cors());
 app.use(express.json());
 
 // Serve static frontend
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Routes
+// Authentication
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
+// User management
 const usersRoutes = require('./routes/users');
 app.use('/api/users', usersRoutes);
 
+// Audio files management
 const uploadRouter = require('./routes/upload');
 app.use('/api/upload', uploadRouter);
 
+// Audio data management
 const audioRouter = require('./routes/audio');
 app.use('/api/audio', audioRouter);
-
-// Fallback for SPA
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
-});
 
 // Default 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
+});
+
+// Fallback to index.html for Single Page Application (SPA)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 // Start server
