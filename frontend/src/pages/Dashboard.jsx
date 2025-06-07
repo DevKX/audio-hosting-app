@@ -11,14 +11,13 @@ const TABS = [
   { key: "upload", label: "Upload Audio" },
 ];
 
-export default function Dashboard({ showConsoleMessage }) {
+export default function Dashboard({ showConsoleMessage, currentLogonUser }) {
   const [selectedTab, setSelectedTab] = useState("audio");
   const [users, setUsers] = useState([]);
   const [audioFiles, setAudioFiles] = useState([]);
   const [showUserForm, setShowUserForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [formMode, setFormMode] = useState("");
-  const [currentLogonUser, setCurrentLogonUser] = useState(null);
   const token = localStorage.getItem("authToken");
 
   function fetchUsers() {
@@ -72,21 +71,6 @@ export default function Dashboard({ showConsoleMessage }) {
       fetchAudioFiles();
     }, 10000); 
     return () => clearInterval(interval); // cleanup on unmount
-  }, [token]);
-
-  useEffect(() => {
-    axios
-      .get("/api/users/currentLogonUser", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        setCurrentLogonUser(res.data.user);
-      })
-      .catch((err) => {
-        showConsoleMessage(err.response.data.message, "error");
-        localStorage.removeItem("authToken");
-        window.location.href = "/login";
-      });
   }, [token]);
 
 
