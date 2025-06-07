@@ -4,21 +4,20 @@ import axios from "axios";
 export default function LoginForm({ onLogin, showConsoleMessage }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-      axios
-      .post("/api/auth/login", { username, password }, {
-      })
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    
+    // API call to login and retrieve token
+    axios
+      .post("/api/auth/login", { username, password }, {})
       .then((res) => {
-       const { token } = res.data.token;
-      localStorage.setItem("authToken", token);
-      if (onLogin) onLogin({ token });
+        const { token } = res.data.token;
+        localStorage.setItem("authToken", token);
+        if (onLogin) onLogin({ token }); // Pass the token to the Login component via props
       })
       .catch((err) => {
-        showConsoleMessage(err.response.data.message , "error");
+        showConsoleMessage(err.response.data.message, "error");
       });
   };
 
@@ -29,7 +28,7 @@ export default function LoginForm({ onLogin, showConsoleMessage }) {
         className="w-full p-3 border-2 border-blue-900 rounded bg-white focus:outline-none focus:border-blue-500 transition"
         placeholder="Username"
         value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        onChange={(event) => setUsername(event.target.value)}
         autoComplete="username"
         required
       />
@@ -38,7 +37,7 @@ export default function LoginForm({ onLogin, showConsoleMessage }) {
         className="w-full p-3 border-2 border-blue-900 rounded bg-white focus:outline-none focus:border-blue-500 transition"
         placeholder="Password"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={(event) => setPassword(event.target.value)}
         autoComplete="current-password"
         required
       />
