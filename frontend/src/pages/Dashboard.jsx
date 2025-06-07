@@ -20,6 +20,11 @@ export default function Dashboard({ showConsoleMessage, currentLogonUser }) {
   const [formMode, setFormMode] = useState("");
   const token = localStorage.getItem("authToken");
 
+
+
+
+  // Start of Users module
+  // Fetch users from the backend. Refresh every 10 seconds
   function fetchUsers() {
     axios
       .get("/api/users", {
@@ -35,114 +40,13 @@ export default function Dashboard({ showConsoleMessage, currentLogonUser }) {
       });
   }
 
-
   useEffect(() => {
     fetchUsers(); 
-
     const interval = setInterval(() => {
       fetchUsers();
-    }, 10000); // every 10 seconds
-    return () => clearInterval(interval); // cleanup on unmount
-  }, [token]);
-
-  function fetchAudioFiles() {
-    axios
-      .get("/api/audio", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        setAudioFiles(res.data.audioFiles);
-      })
-      .catch((err) => {
-        showConsoleMessage(
-          err.response.data.message,
-          "error"
-        );
-        setAudioFiles([]);
-      });
-  }
-
-
-
-
-  useEffect(() => {  
-    fetchAudioFiles();
-    const interval = setInterval(() => {
-      fetchAudioFiles();
     }, 10000); 
     return () => clearInterval(interval); // cleanup on unmount
   }, [token]);
-
-
-  function handleAudioUpload({ file, title, description, isPublic, category }) {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("is_public", isPublic);
-    formData.append("category", category);
-
-
-    axios
-      .post("/api/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => {
-       handleUploadAudioMetadata(res.data);
-      })
-      .catch((err) => {
-        showConsoleMessage(err.response.data.message, "error");
-      });
-  }
-
-  function handleUploadAudioMetadata(fileData) {
-    axios
-      .post(
-        "/api/audio",
-        {
-          file_path: fileData.fileUrl,
-          filename: fileData.filename,
-          title: fileData.title,
-          description: fileData.description,
-          file_size: fileData.file_size,
-          duration_seconds: fileData.duration_seconds,
-          is_public: fileData.is_public,
-          category: fileData.category,
-          mime_type: fileData.mime_type,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      )
-      .then((res) => {
-        showConsoleMessage("Audio Uploaded Successfully", "success");
-        fetchAudioFiles(); 
-      })
-      .catch((err) => {
-        // If metadata upload fails, delete the uploaded file
-        axios
-          .delete(`/api/upload/${fileData.filename}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          .then(() => {
-            showConsoleMessage(
-              "Audio Upload failed. Uploaded file removed.",
-              "error"
-            );
-          })
-          .catch(() => {
-            showConsoleMessage(
-              "Audio upload failed. Please contact support to delete the audio file.",
-              "error"
-            );
-          });
-      });
-  }
-
-  
 
   function handleCreateUser() {
     setEditingUser(null);
@@ -150,6 +54,7 @@ export default function Dashboard({ showConsoleMessage, currentLogonUser }) {
     setShowUserForm(true);
   }
 
+  // editing user will pass the user object from user list component to userform component
   function handleUpdateUser(user) {
     setEditingUser(user);
     setFormMode("update");
@@ -162,6 +67,12 @@ export default function Dashboard({ showConsoleMessage, currentLogonUser }) {
     setShowUserForm(true);
   }
 
+  function handleUserFormCancel() {
+    setShowUserForm(false);
+  }
+
+  // Handle form submission for create, update, and delete user
+  // userData will be the data from userform component. ie user input values
   function handleUserFormSubmit(userData) {
     if (formMode === "create") {
       axios
@@ -224,9 +135,112 @@ export default function Dashboard({ showConsoleMessage, currentLogonUser }) {
     setShowUserForm(false);
   }
 
-  function handleUserFormCancel() {
-    setShowUserForm(false);
+  
+  // End of Users module
+
+  // Start of Audio module
+  // Fetching audio files from backend which include the SAS url to access the audio file.
+  function fetchAudioFiles() {
+    axios
+      .get("/api/audio", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        setAudioFiles(res.data.audioFiles);
+      })
+      .catch((err) => {
+        showConsoleMessage(
+          err.response.data.message,
+          "error"
+        );
+        setAudioFiles([]);
+      });
   }
+
+  // Fetch audio files from the backend. Refresh every 10 seconds
+  useEffect(() => {  
+    fetchAudioFiles();
+    const interval = setInterval(() => {
+      fetchAudioFiles();
+    }, 10000); 
+    return () => clearInterval(interval); // cleanup on unmount
+  }, [token]);
+
+
+  function handleAudioUpload({ file, title, description, isPublic, category }) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("is_public", isPublic);
+    formData.append("category", category);
+
+    axios
+      .post("/api/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+       handleUploadAudioMetadata(res.data);
+      })
+      .catch((err) => {
+        showConsoleMessage(err.response.data.message, "error");
+      });
+  }
+
+  function handleUploadAudioMetadata(fileData) {
+    axios
+      .post(
+        "/api/audio",
+        {
+          file_path: fileData.fileUrl,
+          filename: fileData.filename,
+          title: fileData.title,
+          description: fileData.description,
+          file_size: fileData.file_size,
+          duration_seconds: fileData.duration_seconds,
+          is_public: fileData.is_public,
+          category: fileData.category,
+          mime_type: fileData.mime_type,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+      .then((res) => {
+        showConsoleMessage("Audio Uploaded Successfully", "success");
+        fetchAudioFiles(); 
+      })
+      .catch((err) => {
+        // If metadata upload fails, delete the uploaded file
+        axios
+          .delete(`/api/upload/${fileData.filename}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          .then(() => {
+            showConsoleMessage(
+              "Audio Upload failed. Uploaded file removed.",
+              "error"
+            );
+          })
+          .catch(() => {
+            showConsoleMessage(
+              "Audio upload failed. Please contact support to delete the audio file.",
+              "error"
+            );
+          });
+      });
+  }
+
+  
+// End of Audio module
+  
+
+  
+
+  
 
   function handleLogout() {
     localStorage.removeItem("authToken");

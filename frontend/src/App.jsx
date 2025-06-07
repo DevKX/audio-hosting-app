@@ -41,7 +41,7 @@ export default function App() {
   
 
 
-  // Handle login and store token in localStorage
+  // Handle login and store token in localStorage and token state
   const handleLogin = (user) => {
     if (!user?.token) {
       showConsoleMessage("Login failed: No token received", "error");
