@@ -15,7 +15,10 @@ This project allows users to upload and playback audio.
 ### Prerequisites
 Create a `.env` file inside the `/backend` directory with the following variables:
 
-```.env
+### Prerequisites
+Create a `.env` file inside the `/backend` directory with the following variables:
+
+```env
 # DB configuration for the audio hosting application
 DB_HOST=
 DB_USER=
@@ -33,6 +36,7 @@ AZURE_STORAGE_ACCOUNT_NAME=
 AZURE_STORAGE_ACCOUNT_KEY=
 
 JWT_SECRET=
+
 
 ### Installation
 # Clone the repo
