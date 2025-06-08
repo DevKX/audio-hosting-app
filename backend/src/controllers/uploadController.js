@@ -15,6 +15,11 @@ exports.uploadAudio = async (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
+    // validate file size
+    if (req.file.size > 50 * 1024 * 1024) {
+      return res.status(400).json({ error: "File size exceeds 50MB limit" });
+    }
+
     // Generate a new file name
     const username = req.user?.username || "unknown";
     const generatedFileName = generateAudioFileName(req.file.originalname, username);
