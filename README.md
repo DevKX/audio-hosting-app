@@ -36,13 +36,13 @@ JWT_SECRET=
 
 # Installation
 
-##Clone the repo:
+### Clone the repo:
 git clone https://github.com/DevKX/audio-hosting-app.git
 
-##Navigate into project directory:
+### Navigate into project directory:
 cd audio-hosting-app
 
-##Docker compose:
+### Docker compose:
 docker compose build
 docker compose up
 
