@@ -35,6 +35,7 @@ JWT_SECRET=
 ```
 
 ## Installation
+
 # Clone the repo
 git clone https://github.com/DevKX/audio-hosting-app.git
 
