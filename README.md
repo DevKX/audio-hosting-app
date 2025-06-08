@@ -1,4 +1,4 @@
-# Audio-hosting-app
+### Audio-hosting-app
 
 This project allows users to upload and playback audio.
 
@@ -10,12 +10,7 @@ This project allows users to upload and playback audio.
 - **Audio management:** Users can view and playback uploaded audio files.
 
 
-## Getting Started
-
-### Prerequisites
-Create a `.env` file inside the `/backend` directory with the following variables:
-
-### Prerequisites
+## Prerequisites
 Create a `.env` file inside the `/backend` directory with the following variables:
 
 ```env
@@ -39,7 +34,7 @@ JWT_SECRET=
 
 ```
 
-### Installation
+## Installation
 # Clone the repo
 git clone https://github.com/DevKX/audio-hosting-app.git
 
@@ -50,8 +45,8 @@ cd audio-hosting-app
 docker compose build
 docker compose up
 
-### Usage
+## Usage
 After the Docker containers are up, access the backend API at http://localhost:3000.
 
-### License
+## License
 This project is licensed under the MIT License. See the LICENSE file for details.
