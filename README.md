@@ -39,12 +39,13 @@ JWT_SECRET=
 ## Clone the repo
 git clone https://github.com/DevKX/audio-hosting-app.git
 
-# Navigate into project directory
+## Navigate into project directory
 cd audio-hosting-app
 
 ## Docker compose
 docker compose build
 docker compose up
+
 
 # Usage
 After the Docker containers are up, access the backend API at http://localhost:3000.
