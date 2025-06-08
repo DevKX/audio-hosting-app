@@ -59,7 +59,7 @@ exports.deleteAudio = async (req, res) => {
   try {
     const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
     const containerName = process.env.AZURE_BLOB_CONTAINER;
-    const { filename } = req.params; // or req.body, depending on your route
+    const { filename } = req.params; 
 
     if (!AZURE_STORAGE_CONNECTION_STRING || !containerName) {
       return res.status(500).json({ error: "Azure storage config missing" });

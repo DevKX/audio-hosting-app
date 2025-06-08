@@ -51,7 +51,7 @@ exports.createAudio = async (req, res) => {
 exports.listAudio = async (req, res) => {
   try {
     const user_id = req.user.id;
-    const user_role = req.user.role; // Make sure your JWT includes the user's role
+    const user_role = req.user.role;
 
     let query = `
       SELECT audio_files.*, users.username AS uploaded_by
