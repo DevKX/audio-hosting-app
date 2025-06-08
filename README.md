@@ -15,7 +15,7 @@ This project allows users to upload and playback audio.
 ### Prerequisites
 Create a `.env` file inside the `/backend` directory with the following variables:
 
-.env
+```.env
 # DB configuration for the audio hosting application
 DB_HOST=
 DB_USER=
@@ -41,12 +41,12 @@ git clone https://github.com/DevKX/audio-hosting-app.git
 # Navigate into project directory
 cd audio-hosting-app
 
-#Docker compose
+# Docker compose
 docker compose build
 docker compose up
 
-Usage
+### Usage
 After the Docker containers are up, access the backend API at http://localhost:3000.
 
-License
+### License
 This project is licensed under the MIT License. See the LICENSE file for details.
