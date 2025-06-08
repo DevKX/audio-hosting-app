@@ -37,6 +37,7 @@ AZURE_STORAGE_ACCOUNT_KEY=
 
 JWT_SECRET=
 
+```
 
 ### Installation
 # Clone the repo
