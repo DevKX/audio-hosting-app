@@ -2,22 +2,24 @@ const { BlobServiceClient } = require('@azure/storage-blob');
 const { generateAudioFileName } = require('../services/fileNameService');
 const mm = require('music-metadata'); // Add this line
 
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
 exports.uploadAudio = async (req, res) => {
   try {
     const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
     const containerName = process.env.AZURE_BLOB_CONTAINER;
 
     if (!AZURE_STORAGE_CONNECTION_STRING || !containerName) {
-      return res.status(500).json({ error: "Azure storage config missing" });
+      return res.status(500).json({ message: "Azure storage config missing" });
     }
 
     if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
+      return res.status(400).json({ message: "No file uploaded" });
     }
 
     // validate file size
-    if (req.file.size > 50 * 1024 * 1024) {
-      return res.status(400).json({ error: "File size exceeds 50MB limit" });
+    if (req.file.size > MAX_FILE_SIZE) {
+      return res.status(400).json({ message: `File size exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit` });
     }
 
     // Generate a new file name
@@ -67,10 +69,10 @@ exports.deleteAudio = async (req, res) => {
     const { filename } = req.params; 
 
     if (!AZURE_STORAGE_CONNECTION_STRING || !containerName) {
-      return res.status(500).json({ error: "Azure storage config missing" });
+      return res.status(500).json({ message: "Azure storage config missing" });
     }
     if (!filename) {
-      return res.status(400).json({ error: "No filename provided" });
+      return res.status(400).json({ message: "No filename provided" });
     }
 
     const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
