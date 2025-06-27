@@ -47,18 +47,18 @@ docker compose build
 docker compose up
 
 # Screenshot
-Login Page
+### Login Page
 ![image](https://github.com/user-attachments/assets/77b650eb-8aa3-4c2f-9b6e-3fde719e8567)
 
-User Management page
+### User Management page
 ![image](https://github.com/user-attachments/assets/3f2c66ad-32ad-45bf-bc31-efb59d3f2ec9)
 
 
-Audio Management Page
+### Audio Management Page
 ![image](https://github.com/user-attachments/assets/2c01ccb5-d3f4-4fb9-9e7f-169ffdbc2e5a)
 
 
-Audio Upload Page
+### Audio Upload Page
 ![image](https://github.com/user-attachments/assets/2a4f9fcb-9ce1-4292-8612-703e62605bd0)
 
 # Usage
