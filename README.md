@@ -46,7 +46,7 @@ cd audio-hosting-app
 docker compose build
 docker compose up
 
-### Screenshot
+# Screenshot
 Login Page
 ![image](https://github.com/user-attachments/assets/77b650eb-8aa3-4c2f-9b6e-3fde719e8567)
 
