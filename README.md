@@ -65,7 +65,7 @@ docker compose up
 
 
 
-# Technical Design
+## Technical Design
 
 ### Backend
 
@@ -111,7 +111,7 @@ The API is decoupled to support future microservices architecture, allowing each
   - `AudioUpload`: Provides form for uploading audio files and associated metadata.
 
 
-# Screenshot
+## Screenshots
 
 ### Login Page
 ![image](https://github.com/user-attachments/assets/77b650eb-8aa3-4c2f-9b6e-3fde719e8567)
